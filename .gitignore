@@ -124,3 +124,19 @@ mogen/checkpoints/TMR
 mogen/checkpoints/ms/epoch=99.ckpt
 mogen/checkpoints/ms/sae_ms_l2_4_16_1024_d3_kl_1e-05_zero
 mogen/checkpoints/ms/pretrained_model_272
+
+# Model checkpoints (downloaded, too large for git)
+mogen/checkpoints/ms/epoch=99.ckpt.1
+mogen/checkpoints/ms/sae_ms_l2_2_32_1024_d3_kl_1e-05_zero_cos_0.001
+
+# Body models (SMPL/SMPLX, downloaded separately)
+mogen/body_models/smplx/
+
+# Datasets (downloaded / processed)
+data/
+
+# Generated motion outputs (mp4, npz)
+animation/
+
+# Papers
+*.pdf

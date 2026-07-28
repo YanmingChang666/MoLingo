@@ -12,7 +12,7 @@ def arg_parse(is_train=False):
     parser.add_argument('--batch_size', default=32, type=int, help='batch size')
     parser.add_argument("--gpu_id", type=int, default=0, help='GPU id')
     parser.add_argument("--exp_name", type=str, default='ms', help='short tag baked into the run name')
-    parser.add_argument("--data_root", type=str, default='/home/hynann/data', help='Root folder for training data')
+    parser.add_argument("--data_root", type=str, default='/home/cym/Python_project/humanoid_robot/MoLingo/data', help='Root folder for training data')
 
     ## optimization
     parser.add_argument('--max_epoch', default=5000, type=int, help='number of total epochs to run')

@@ -54,7 +54,7 @@ def get_opt(opt_path, device, **kwargs):
     opt.model_dir = pjoin(opt.save_root, 'model')
     opt.meta_dir = pjoin(opt.save_root, 'meta')
 
-    opt.data_base = '/home/hynann/data'
+    opt.data_base = '/home/cym/Python_project/humanoid_robot/MoLingo/data'
 
     if opt.dataset_name == 't2m':
         opt.data_root = pjoin(opt.data_base, 'HumanML3D/HumanML3D/')

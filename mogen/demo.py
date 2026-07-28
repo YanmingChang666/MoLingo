@@ -86,8 +86,8 @@ def is_number(s: str) -> bool:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Configurations for motion generation")
     parser.add_argument("-i", "--input", type=str, default="assets/example.txt")
-    parser.add_argument("-b", "--bm_path", type=str, default='/home/hynann/data/smplx_models', help="Modify with your own SMPL model directory")
-    parser.add_argument("-dr", "--data_root", type=str, default='/home/hynann/data', help="Modify with your own dataset directory")
+    parser.add_argument("-b", "--bm_path", type=str, default='/home/cym/Python_project/humanoid_robot/MoLingo/data/smplx_models', help="Modify with your own SMPL model directory")
+    parser.add_argument("-dr", "--data_root", type=str, default='/home/cym/Python_project/humanoid_robot/MoLingo/data', help="Modify with your own dataset directory")
     parser.add_argument("-s", "--step", type=int, default=32, help="The number of Rectified Flow sampling steps")
     parser.add_argument("-c", "--cfg", type=float, default=4.0, help="CFG value")
     parser.add_argument("-t", "--temperature", type=float, default=1.0, help="CFG temprature")
@@ -178,8 +178,10 @@ if __name__ == '__main__':
     clip_version = 'ViT-B/32'
     clip_model = load_and_freeze_clip(clip_version).cuda()
 
-    length_estimator = load_len_estimator(device)
-    length_estimator.to(device)
+    length_estimator = None
+    if os.path.exists('mogen/checkpoints/t2m/length_estimator/model/finest.tar'):
+        length_estimator = load_len_estimator(device)
+        length_estimator.to(device)
 
     # load prompt list
     prompt_list = []
@@ -200,6 +202,11 @@ if __name__ == '__main__':
 
     # calculate text embeding
     if est_length:
+        if length_estimator is None:
+            raise FileNotFoundError(
+                "Some prompts use '#NA' but the length estimator checkpoint is missing "
+                "(mogen/checkpoints/t2m/length_estimator/model/finest.tar). "
+                "Either download it or specify explicit durations for every line in the input file.")
         print("Since no motion length are specified, we will use estimated motion lengthes!!")
         text_embedding = clip_encode_text(prompt_list)
         pred_dis = length_estimator(text_embedding)
@@ -231,7 +238,8 @@ if __name__ == '__main__':
                 curr_data = curr_data[:m_length[k]]
                 trans, rots = pose_272_to_smpl(curr_data)  # [T, 3] [T, 22, 3]
 
-                bm = smplx.create(args.bm_path, model_type='smplh', num_betas=10, gender='neutral',
+                bm = smplx.create(args.bm_path, model_type='smplx', num_betas=10, gender='neutral',
+                                  use_pca=False, flat_hand_mean=True,
                                   batch_size=trans.shape[0]).to(device='cuda')
 
                 bparam = {}
@@ -243,3 +251,23 @@ if __name__ == '__main__':
 
                 video_save_path = pjoin(save_dir, "molingo_sample%d_repeat%d.mp4" % (k, r))
                 plot_3d_motion(video_save_path, kinematic_chain, joint, title=caption, fps=fps)
+
+                if args.store_smpl:
+                    # Export an AMASS-compatible .npz for downstream retargeting.
+                    # poses: [T, 72] SMPL axis-angle (22 joints * 3, padded to 24 joints);
+                    # trans: [T, 3] root translation; betas: neutral (zeros).
+                    poses_66 = rots.reshape(rots.shape[0], -1).astype(np.float32)  # [T, 66]
+                    poses_72 = np.concatenate(
+                        [poses_66, np.zeros((poses_66.shape[0], 6), dtype=np.float32)], axis=-1)  # [T, 72]
+                    npz_save_path = pjoin(save_dir, "molingo_sample%d_repeat%d.npz" % (k, r))
+                    np.savez(
+                        npz_save_path,
+                        poses=poses_72,
+                        trans=trans.astype(np.float32),
+                        betas=np.zeros(10, dtype=np.float32),
+                        gender='neutral',
+                        mocap_framerate=np.array(fps, dtype=np.float32),
+                        caption=caption,
+                        joints=joint.astype(np.float32),  # [T, 22, 3] global joint positions
+                    )
+                    print("     saved SMPL motion -> %s" % npz_save_path)

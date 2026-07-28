@@ -60,7 +60,7 @@ def load_vae_model(vae_opt, ckpt_path, dim_pose, device):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Configurations for the Model Eval")
     parser.add_argument("-d", "--dim_pose", type=int, default=263, choices=[263, 272], help="Motion representation")
-    parser.add_argument("-dr", "--data_root", type=str, default='/home/hynann/data', help="Modify with your own dataset directory")
+    parser.add_argument("-dr", "--data_root", type=str, default='/home/cym/Python_project/humanoid_robot/MoLingo/data', help="Modify with your own dataset directory")
     parser.add_argument("-s", "--step", type=int, default=32, help="The number of Rectified Flow sampling steps")
     parser.add_argument("-c", "--cfg", type=float, default=5.5, help="CFG value")
     parser.add_argument("-t", "--temperature", type=float, default=1.0, help="CFG temprature")

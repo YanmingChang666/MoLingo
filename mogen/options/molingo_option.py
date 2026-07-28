@@ -10,7 +10,7 @@ def arg_parse(is_train=False):
     parser.add_argument('--device', type=str, default='cuda', help='cpu or cuda')
     parser.add_argument('--dataset_name', type=str, default='ms', help='dataset directory')
     parser.add_argument('--batch_size', type=int, default=64, help='batch size')
-    parser.add_argument('--data_root', type=str, default='/home/hynann/data', help='root folder for training data')
+    parser.add_argument('--data_root', type=str, default='/home/cym/Python_project/humanoid_robot/MoLingo/data', help='root folder for training data')
     parser.add_argument('--exp_name', type=str, default='ms', help='short tag baked into the run name')
 
     ## distributed
