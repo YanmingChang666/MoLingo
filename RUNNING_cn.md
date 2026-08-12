@@ -80,6 +80,32 @@ python mogen/demo.py -a 1 -i assets/example.txt -b mogen/body_models -r 1 -dr da
 
 ---
 
+## 渲染完整 SMPL-X 网格视频
+
+demo 默认渲染的是**骨架**。若想渲染**完整人体网格**的视频，先用 `-st` 导出 `.npz`
+（见上一节），再运行：
+
+```bash
+conda activate molingo
+python mogen/utils/render_smpl_mesh.py \
+  -i animation/dim_272_cfg_4.0_acc_1_step_32/molingo_sample0_repeat0.npz \
+  -b mogen/body_models
+```
+
+输出：在同名 `.npz` 旁生成 `..._mesh.mp4`。脚本会读取 `.npz` 里的姿态序列、跑
+SMPL-X 人体模型，把带材质的网格渲染到一个地面平面上（脚落地、每帧按根关节水平居中）。
+
+参数说明：
+- `-i` 输入的 `.npz`（`molingo_sample{k}_repeat{r}.npz`）。
+- `-b` 含 `smplx/` 子目录的**父目录**（与 demo 的 `-b` 相同）。
+- `-o` 输出 mp4 路径（默认 `<npz>_mesh.mp4`）。
+- `--resolution` 渲染分辨率（默认 `768 768`）。
+
+依赖 `pyrender` + 支持 EGL 的 GPU（脚本已默认 `PYOPENGL_PLATFORM=egl`）。注意：导出的
+`.npz` 是 **Z-up**，渲染脚本会自动把它转成 pyrender 的 Y-up 相机约定，人物才会站立。
+
+---
+
 ## 从零开始的完整配置
 
 ### 1. 创建 conda 环境

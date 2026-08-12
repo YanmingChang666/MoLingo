@@ -39,6 +39,7 @@
 
 ## News
 
+- [2026-08-12] Added a full **SMPL-X mesh video renderer** and an **AMASS-compatible motion export** (`-st`) for the demo — see the [Demo](#demo) section.
 - [2026-04-20] Training scripts for the SAE and the generation model released.
 - [2026-03-07] **Note: We have updated the pre-trained 272-dimensional model and its SAE with better checkpoints. If you downloaded the version from the initial commit, please run ```prepare/download_models.sh``` again to get the latest version.**
 - [2026-03-07] Motion generation demo released, **pull the latest version and give it a try!**
@@ -214,6 +215,11 @@ python mogen/demo.py -a 1 -i assets/example.txt -b {your_smpl_model_path}
 * If you write ```<text description>#NA```, we will call the length estimator from  [MoMask](https://github.com/EricGuo5513/momask-codes) to determine a length. Note once there is one NA, all the others will be NA automatically.
 * To render the animation video, we first apply FK to obtain the body joints. Be sure to specify the SMPL model path with ```-b```, replacing it with your own path. Follow [this](https://github.com/vchoutas/smplx#downloading-the-model) link for the instruction on setting it up.
  The ```-b``` should have [this](https://github.com/vchoutas/smplx#model-loading) structure.
+* **Export motion & render a full body mesh (optional).** Add ```-st``` to the demo command to also export each generation as an AMASS-compatible ```.npz``` (SMPL axis-angle poses, root translation, and global joints) next to the mp4. From that ```.npz``` you can render a full **SMPL-X body-mesh** video — instead of the default skeleton — with:
+    ```
+    python mogen/utils/render_smpl_mesh.py -i {path_to}/molingo_sample0_repeat0.npz -b {your_smplx_model_path}
+    ```
+    This runs the SMPL-X body model and renders the textured mesh grounded on a floor plane to ```<npz>_mesh.mp4``` (optional ```-o``` for the output path, ```--resolution``` for the frame size). It requires ```pyrender``` with an EGL-capable GPU. The same exported ```.npz``` also feeds the AMASS-to-robot retargeting script (```convert_fit_motion_V2.py```).
 
 ### Some thoughts:
 
