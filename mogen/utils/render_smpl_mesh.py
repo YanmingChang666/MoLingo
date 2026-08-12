@@ -47,9 +47,13 @@ def render_mesh_video(vertices, faces, root_xy, save_path, fps=30.0,
                        resolution=(768, 768), cam_dist=3.0, cam_height=1.0,
                        caption=''):
     verts = vertices.copy()
-    verts[:, :, 1] -= verts[:, :, 1].min()  # ground the feet at y=0
+    verts[:, :, 2] -= verts[:, :, 2].min()  # ground the feet (data axis 2 is height, not 1)
     verts[:, :, 0] -= root_xy[:, 0:1]  # keep the character centered each frame
-    verts[:, :, 2] -= root_xy[:, 1:2]
+    verts[:, :, 1] -= root_xy[:, 1:2]
+
+    # This SMPL-X output is Z-up; rotate -90 deg about X so it matches
+    # pyrender/OpenGL's Y-up camera convention (x, z, -y) -> (x, y, z).
+    verts = np.stack([verts[..., 0], verts[..., 2], -verts[..., 1]], axis=-1)
 
     body_material = pyrender.MetallicRoughnessMaterial(
         metallicFactor=0.1, roughnessFactor=0.7, baseColorFactor=(0.55, 0.65, 0.85, 1.0))
@@ -117,7 +121,7 @@ if __name__ == '__main__':
     out_path = args.out or os.path.splitext(args.npz)[0] + '_mesh.mp4'
 
     vertices, joints, faces, fps, caption = load_smpl_mesh_sequence(args.npz, args.bm_path, device=args.device)
-    root_xy = joints[:, 0, [0, 2]]
+    root_xy = joints[:, 0, [0, 1]]  # the two horizontal axes; axis 2 is height
     render_mesh_video(vertices, faces, root_xy, out_path, fps=fps,
                        resolution=tuple(args.resolution), caption=caption)
     print(f"Saved full SMPL mesh video -> {out_path} (caption: {caption})")
